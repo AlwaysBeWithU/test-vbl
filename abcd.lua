@@ -490,7 +490,7 @@ task.spawn(function() pcall(runClaim) end)
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 -- ผูกระบบแจ้งเตือน (ขึ้นทุกครั้งที่สุ่ม ขึ้นแค่ 1 วินาที)
-local NOTIFY_SECONDS = 0.5
+local NOTIFY_SECONDS = 0.75
 
 notifyStyle = function(style, rolls, matched)
 	local name = (style ~= nil and style ~= "") and style or "อ่านชื่อไม่ได้"
