@@ -13,10 +13,10 @@ local ClaimLevelRewards = Services.LevelService.RF.ClaimLevelRewards
 local DEFAULT = {
 	AUTO_ROLL = false,
 	LUCKY_SPIN = true,
-	WANTED = { "Sanju", "Kisuki" },
-	MAX_ROLLS = 500,
-	WAIT_AFTER_ROLL = 3,
-	CALL_JERSEY_UPDATE = true,
+	WANTED = { "Sanju", "Kisuki", "Mamori" },
+	MAX_ROLLS = 10,
+	WAIT_AFTER_ROLL = 1,
+	CALL_JERSEY_UPDATE = false,
 	AUTO_REDEEM = true,
 	REDEEM_LEVEL = 15,
 	CODES = {},
@@ -140,7 +140,7 @@ local state = {
 }
 local redeemState = { finished = false, success = 0, failed = 0, ran = false }
 local claimState = { success = 0, failed = 0 }
-local notifyStyle = function(style, rolls) end -- จะถูกผูกกับ WindUI ทีหลัง
+local notifyStyle = function(style, rolls, matched) end -- จะถูกผูกกับ WindUI ทีหลัง
 
 local function redeemSummary()
 	if not redeemState.ran then
@@ -348,7 +348,7 @@ local function runRoll()
 
 	local startStyle = getStyle()
 	if startStyle ~= "" and isWanted(startStyle) then
-		notifyStyle(startStyle, 0)
+		notifyStyle(startStyle, 0, true)
 		finish("ได้ตัวที่ต้องการแล้ว", 0, true)
 		return
 	end
@@ -403,8 +403,12 @@ local function runRoll()
 		state.status = ("กำลังสุ่ม สุ่มไปแล้ว %d ครั้ง"):format(i)
 		state.rolls = i
 
-		if style ~= "" and isWanted(style) then
-			notifyStyle(style, i)
+		local matched = style ~= "" and isWanted(style)
+
+		-- แจ้งเตือนทุกครั้งที่สุ่ม
+		notifyStyle(style, i, matched)
+
+		if matched then
 			finish("ได้ตัวที่ต้องการ สุ่มไป " .. i .. " ครั้ง", i, true)
 			return
 		end
@@ -485,27 +489,32 @@ task.spawn(function() pcall(runClaim) end)
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
--- ผูกระบบแจ้งเตือนเมื่อได้ Style
-notifyStyle = function(style, rolls)
-	print("[Notify] เรียกแจ้งเตือน:", style, rolls)
+-- ผูกระบบแจ้งเตือน (ขึ้นทุกครั้งที่สุ่ม ขึ้นแค่ 1 วินาที)
+local NOTIFY_SECONDS = 1
+
+notifyStyle = function(style, rolls, matched)
+	local name = (style ~= nil and style ~= "") and style or "อ่านชื่อไม่ได้"
+
+	local title = matched and "🎉 ได้ Style ที่ต้องการแล้ว!" or "สุ่มได้ Style"
+	local content = ("%s (ครั้งที่ %d)"):format(name, rolls)
+	print("[Notify]", title, "->", content)
 
 	local ok, err = pcall(function()
 		WindUI:Notify({
-			Title = "ได้ Style ที่ต้องการแล้ว!",
-			Content = ("%s (สุ่มไป %d ครั้ง)"):format(style, rolls),
-			Duration = 8,
+			Title = title,
+			Content = content,
+			Duration = NOTIFY_SECONDS,
 			Icon = "bird",
 		})
 	end)
 
 	if not ok then
 		warn("[Notify] พร้อมไอคอนไม่สำเร็จ:", err)
-		-- ลองอีกครั้งแบบไม่มีไอคอน
 		local ok2, err2 = pcall(function()
 			WindUI:Notify({
-				Title = "ได้ Style ที่ต้องการแล้ว!",
-				Content = ("%s (สุ่มไป %d ครั้ง)"):format(style, rolls),
-				Duration = 8,
+				Title = title,
+				Content = content,
+				Duration = NOTIFY_SECONDS,
 			})
 		end)
 		if not ok2 then
@@ -677,7 +686,9 @@ MiscSection:Button({
 	Title = "ทดสอบแจ้งเตือน",
 	Desc = "กดเพื่อดูว่า notification ขึ้นไหม",
 	Callback = function()
-		notifyStyle("Test", 0)
+		notifyStyle("Test", 1, false)
+		task.wait(1)
+		notifyStyle("Kisuki", 2, true)
 	end,
 })
 
