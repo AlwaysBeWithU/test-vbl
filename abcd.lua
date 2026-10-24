@@ -13,10 +13,10 @@ local ClaimLevelRewards = Services.LevelService.RF.ClaimLevelRewards
 local DEFAULT = {
 	AUTO_ROLL = false,
 	LUCKY_SPIN = true,
-	WANTED = { "Sanju", "Kisuki", "Mamori" },
-	MAX_ROLLS = 10,
-	WAIT_AFTER_ROLL = 1,
-	CALL_JERSEY_UPDATE = false,
+	WANTED = { "Sanju", "Kisuki" },
+	MAX_ROLLS = 500,
+	WAIT_AFTER_ROLL = 3,
+	CALL_JERSEY_UPDATE = true,
 	AUTO_REDEEM = true,
 	REDEEM_LEVEL = 15,
 	CODES = {},
@@ -487,14 +487,31 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 
 -- ผูกระบบแจ้งเตือนเมื่อได้ Style
 notifyStyle = function(style, rolls)
-	pcall(function()
+	print("[Notify] เรียกแจ้งเตือน:", style, rolls)
+
+	local ok, err = pcall(function()
 		WindUI:Notify({
 			Title = "ได้ Style ที่ต้องการแล้ว!",
 			Content = ("%s (สุ่มไป %d ครั้ง)"):format(style, rolls),
 			Duration = 8,
-			Icon = "party-popper",
+			Icon = "bird",
 		})
 	end)
+
+	if not ok then
+		warn("[Notify] พร้อมไอคอนไม่สำเร็จ:", err)
+		-- ลองอีกครั้งแบบไม่มีไอคอน
+		local ok2, err2 = pcall(function()
+			WindUI:Notify({
+				Title = "ได้ Style ที่ต้องการแล้ว!",
+				Content = ("%s (สุ่มไป %d ครั้ง)"):format(style, rolls),
+				Duration = 8,
+			})
+		end)
+		if not ok2 then
+			warn("[Notify] ไม่สำเร็จ:", err2)
+		end
+	end
 end
 
 -- ความโปร่งใสของหน้าต่าง (0 = ทึบ, 1 = ใส) ปรับตัวเลขได้ตามชอบ
@@ -653,6 +670,14 @@ MiscSection:Button({
 	Title = "ส่ง Log ตอนนี้",
 	Callback = function()
 		report()
+	end,
+})
+
+MiscSection:Button({
+	Title = "ทดสอบแจ้งเตือน",
+	Desc = "กดเพื่อดูว่า notification ขึ้นไหม",
+	Callback = function()
+		notifyStyle("Test", 0)
 	end,
 })
 
