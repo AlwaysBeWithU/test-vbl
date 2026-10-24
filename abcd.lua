@@ -490,20 +490,23 @@ task.spawn(function() pcall(runClaim) end)
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 -- ผูกระบบแจ้งเตือน (ขึ้นทุกครั้งที่สุ่ม ขึ้นแค่ 1 วินาที)
-local NOTIFY_SECONDS = 0.75
+-- ผูกระบบแจ้งเตือน
+local NOTIFY_SECONDS = 0.75        -- เวลาแจ้งเตือนตอนสุ่มทั่วไป
+local NOTIFY_MATCHED_SECONDS = 10 -- เวลาแจ้งเตือนตอนได้ตัวที่ต้องการ
 
 notifyStyle = function(style, rolls, matched)
 	local name = (style ~= nil and style ~= "") and style or "อ่านชื่อไม่ได้"
 
 	local title = matched and "🎉 ได้ Style ที่ต้องการแล้ว!" or "สุ่มได้ Style"
 	local content = ("%s (ครั้งที่ %d)"):format(name, rolls)
+	local duration = matched and NOTIFY_MATCHED_SECONDS or NOTIFY_SECONDS
 	print("[Notify]", title, "->", content)
 
 	local ok, err = pcall(function()
 		WindUI:Notify({
 			Title = title,
 			Content = content,
-			Duration = NOTIFY_SECONDS,
+			Duration = duration,
 			Icon = "bird",
 		})
 	end)
@@ -514,7 +517,7 @@ notifyStyle = function(style, rolls, matched)
 			WindUI:Notify({
 				Title = title,
 				Content = content,
-				Duration = NOTIFY_SECONDS,
+				Duration = duration,
 			})
 		end)
 		if not ok2 then
