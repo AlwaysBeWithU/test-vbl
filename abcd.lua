@@ -421,7 +421,7 @@ end
 local cfg = _G.RollConfig
 
 -- รายการ Style ที่ให้เลือกในเมนู (เพิ่ม/ลบตามที่มีในเกม)
-local STYLE_OPTIONS = { "Kisuki", "Sanju", "Mamori" }
+local STYLE_OPTIONS = { "Kisuki", "Sanju", "Mamori", "Kijo" }
 
 local function mergeOptions(options, selected)
 	local out, seen = {}, {}
@@ -623,7 +623,7 @@ RedeemSection:Input({
 	Title = "โค้ด",
 	Desc = "คั่นด้วยจุลภาค เช่น UPDATE_92, PARRY, MAMORI",
 	Value = table.concat(cfg.CODES or {}, ", "),
-	Placeholder = "CODE1, CODE2",
+	Placeholder = "UPDATE_93, CURSED, TOURNAMENT",
 	Callback = function(text)
 		cfg.CODES = splitList(text)
 	end,
